@@ -1,133 +1,196 @@
-public class Date {
-    private int day;
-    private int month;
-    private int year;
+// Driver.java
+import java.util.Scanner;
 
-    private static final int[] DAYS_IN_MONTH = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+public class Driver {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
 
+        // Input first date
+        System.out.print("Enter first date (dd mm yyyy): ");
+        int d1 = sc.nextInt();
+        int m1 = sc.nextInt();
+        int y1 = sc.nextInt();
+
+        Date date1 = new Date(d1, m1, y1);
+
+        // Input second date
+        System.out.print("Enter second date (dd mm yyyy): ");
+        int d2 = sc.nextInt();
+        int m2 = sc.nextInt();
+        int y2 = sc.nextInt();
+
+        Date date2 = new Date(d2, m2, y2);
+
+        System.out.println("\nDate 1: " + date1);
+        System.out.println("Date 2: " + date2);
+
+        // Check equality
+        System.out.println("Dates equal? " + date1.equals(date2));
+
+        // Difference in days
+        System.out.println("Difference between dates = " + date1.difference(date2) + " days");
+
+        // Add days to first date
+        System.out.print("Enter days to add to first date: ");
+        int add = sc.nextInt();
+        date1.addDays(add);
+        System.out.println("New Date 1 after adding: " + date1);
+
+        // Subtract days from second date
+        System.out.print("Enter days to subtract from second date: ");
+        int sub = sc.nextInt();
+        date2.subtractDays(sub);
+        System.out.println("New Date 2 after subtracting: " + date2);
+
+        sc.close();
+    }
+}
+
+// -------------------------
+// Date class
+// -------------------------
+class Date {
+    private int day, month, year;
+
+    // Default constructor: 01/01/1800
     public Date() {
         this.day = 1;
         this.month = 1;
         this.year = 1800;
     }
 
+    // Parameterized constructor
     public Date(int day, int month, int year) {
-        if (!isValidDate(day, month, year)) {
-            System.out.println("Invalid date. Setting to default date 01/01/1800.");
+        if (isValidDate(day, month, year)) {
+            this.day = day;
+            this.month = month;
+            this.year = year;
+        } else {
+            // default fallback
             this.day = 1;
             this.month = 1;
             this.year = 1800;
-        } else {
+            System.out.println("Invalid date entered! Default date set: 01/01/1800");
+        }
+    }
+
+    // Mutators (setters) with validation
+    public void setDay(int day) {
+        if (isValidDate(day, this.month, this.year)) {
             this.day = day;
+        }
+    }
+
+    public void setMonth(int month) {
+        if (isValidDate(this.day, month, this.year)) {
             this.month = month;
+        }
+    }
+
+    public void setYear(int year) {
+        if (isValidDate(this.day, this.month, year)) {
             this.year = year;
         }
     }
 
-    public int getDay() {
-        return day;
+    // Accessors (getters)
+    public int getDay() { return day; }
+    public int getMonth() { return month; }
+    public int getYear() { return year; }
+
+    // Check if two dates are equal
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Date)) return false;
+        Date other = (Date) obj;
+        return this.day == other.day && this.month == other.month && this.year == other.year;
     }
 
-    public int getMonth() {
-        return month;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setDate(int day, int month, int year) {
-        if (!isValidDate(day, month, year)) {
-            System.out.println("Invalid date. No changes were made.");
-        } else {
-            this.day = day;
-            this.month = month;
-            this.year = year;
-        }
-    }
-
-    private boolean isLeapYear(int year) {
-        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-    }
-
-    private boolean isValidDate(int d, int m, int y) {
-        if (y < 1800 || m < 1 || m > 12 || d < 1) {
-            return false;
-        }
-        int maxDays = DAYS_IN_MONTH[m];
-        if (m == 2 && isLeapYear(y)) {
-            maxDays = 29;
-        }
-        return d <= maxDays;
-    }
-
+    // toString method
     @Override
     public String toString() {
         return String.format("%02d/%02d/%04d", day, month, year);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Date other = (Date) obj;
-        return day == other.day && month == other.month && year == other.year;
+    // Difference between two dates in days
+    public int difference(Date other) {
+        return Math.abs(toDays() - other.toDays());
     }
 
-    private int countDaysSinceEpoch() {
-        int totalDays = 0;
-        for (int y = 1800; y < this.year; y++) {
-            totalDays += isLeapYear(y) ? 366 : 365;
-        }
-        for (int m = 1; m < this.month; m++) {
-            totalDays += DAYS_IN_MONTH[m];
-            if (m == 2 && isLeapYear(this.year)) {
-                totalDays++;
-            }
-        }
-        totalDays += this.day;
-        return totalDays;
+    // Add n days
+    public void addDays(int n) {
+        int days = toDays() + n;
+        fromDays(days);
     }
 
-    public int differenceInDays(Date other) {
-        return Math.abs(this.countDaysSinceEpoch() - other.countDaysSinceEpoch());
+    // Subtract n days
+    public void subtractDays(int n) {
+        int days = toDays() - n;
+        if (days < 0) days = 0; // fallback
+        fromDays(days);
     }
-    
-    private void setDateFromDays(int totalDays) {
-        this.year = 1800;
-        while (totalDays > (isLeapYear(this.year) ? 366 : 365)) {
-            totalDays -= isLeapYear(this.year) ? 366 : 365;
-            this.year++;
-        }
 
-        this.month = 1;
+    // -------------------------
+    // Private helper methods
+    // -------------------------
+
+    // Convert current date to total days since 01/01/1800
+    private int toDays() {
+        int days = 0;
+        for (int y = 1800; y < year; y++) {
+            days += isLeapYear(y) ? 366 : 365;
+        }
+        for (int m = 1; m < month; m++) {
+            days += daysInMonth(m, year);
+        }
+        days += day;
+        return days;
+    }
+
+    // Convert days back to date
+    private void fromDays(int totalDays) {
+        int y = 1800;
         while (true) {
-            int daysInCurrentMonth = DAYS_IN_MONTH[this.month];
-            if (this.month == 2 && isLeapYear(this.year)) {
-                daysInCurrentMonth = 29;
-            }
-            if (totalDays <= daysInCurrentMonth) {
-                break;
-            }
-            totalDays -= daysInCurrentMonth;
-            this.month++;
+            int daysInYear = isLeapYear(y) ? 366 : 365;
+            if (totalDays > daysInYear) {
+                totalDays -= daysInYear;
+                y++;
+            } else break;
+        }
+        int m = 1;
+        while (true) {
+            int daysInMonth = daysInMonth(m, y);
+            if (totalDays > daysInMonth) {
+                totalDays -= daysInMonth;
+                m++;
+            } else break;
         }
         this.day = totalDays;
+        this.month = m;
+        this.year = y;
     }
 
-    public void addDays(int n) {
-        if (n < 0) return;
-        int totalDays = this.countDaysSinceEpoch() + n;
-        setDateFromDays(totalDays);
+    // Validate date
+    private boolean isValidDate(int d, int m, int y) {
+        if (y < 1800 || m < 1 || m > 12) return false;
+        return d >= 1 && d <= daysInMonth(m, y);
     }
-    
-    public void subtractDays(int n) {
-        if (n < 0) return;
-        int totalDays = this.countDaysSinceEpoch() - n;
-        if (totalDays < 1) {
-             System.out.println("Resulting date is before 01/01/1800. No changes were made.");
-             return;
+
+    // Days in month
+    private int daysInMonth(int m, int y) {
+        switch(m) {
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: return 31;
+            case 4: case 6: case 9: case 11: return 30;
+            case 2: return isLeapYear(y) ? 29 : 28;
+            default: return 0;
         }
-        setDateFromDays(totalDays);
+    }
+
+    // Leap year check
+    private boolean isLeapYear(int y) {
+        if (y % 400 == 0) return true;
+        if (y % 100 == 0) return false;
+        return y % 4 == 0;
     }
 }
