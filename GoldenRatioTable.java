@@ -1,5 +1,5 @@
 import java.util.*;
-class Assign102
+class GoldenRatioTable
 {
     public static void main(String[] args) 
     {

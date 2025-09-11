@@ -1,6 +1,6 @@
 import java.util.*;
 
-class Assign106 {
+class Bank {
     public static void main(String args[]) {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter Initial Balance: ");
